@@ -1,15 +1,24 @@
+
+const util = require('util');
+
 var onfield = function (f, result) {
-  var prefix = f.repeated ? 'repeated' : f.required ? 'required' : 'optional'
-  if (f.type === 'map') prefix = 'map<' + f.map.from + ',' + f.map.to + '>'
-  if (f.oneof) prefix = ''
+  console.log(`stringifying field ${util.inspect(f, {showHidden: false, depth: null, colors: true})}`);
+  var prefix = f.repeated ? 'repeated' : '';    //f.required ? 'required' : 'optional'
+//  if (f.type === 'map') {
+//    console.log(`field type is map!`);
+//    prefix = 'map<' + f.map.from + ',' + f.map.to + '>';
+//  }
+  if (f.oneof) {
+    prefix = ''
+  }
 
   var opts = Object.keys(f.options || {}).map(function (key) {
     return key + ' = ' + f.options[key]
   }).join(',')
 
   if (opts) opts = ' [' + opts + ']'
-
-  result.push((prefix ? prefix + ' ' : '') + (f.map === 'map' ? '' : f.type + ' ') + f.name + ' = ' + f.tag + opts + ';')
+  console.log(`prefix is ${prefix}`);
+  result.push((prefix ? prefix + ' ' : '') + (f.type === 'map' ? '' : f.type + ' ') + f.name + ' = ' + f.tag + opts + ';')
   return result
 }
 
@@ -158,6 +167,15 @@ module.exports = function (schema) {
   result.push('syntax = "proto' + schema.syntax + '";', '')
 
   if (schema.package) result.push('package ' + schema.package + ';', '')
+
+//  console.log(`imports ${schema.imports}`);
+  if (schema.imports) {
+    for (let i of schema.imports) {
+      //import "package_name";
+      result.push(`import "${i}";`, '');
+    }
+  }
+
 
   if (!schema.options) schema.options = {}
 
